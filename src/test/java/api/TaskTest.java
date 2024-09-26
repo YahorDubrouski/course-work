@@ -1,72 +1,39 @@
 package api;
 
+import base.ColumnRepository;
+import base.ProjectRepository;
+import base.TaskRepository;
+import base.UserRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openqa.selenium.NotFoundException;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.Assert;
+import org.apache.commons.lang3.RandomStringUtils;
 
-public class ProjectTasksTest extends BaseTest {
+public class TaskTest extends BaseTest {
+    private ProjectRepository projectRepository = new ProjectRepository();
+    private UserRepository userRepository = new UserRepository();
+    private TaskRepository taskRepository = new TaskRepository();
+    private ColumnRepository columnRepository = new ColumnRepository();
+
     private Integer projectId;
     private Integer backlogColumnId;
+    private Integer userId;
 
-    private void createProject() {
+    private void initProject() {
         if (projectId != null) {
             return;
         }
 
-        JSONObject body = new JSONObject();
-        body.put("jsonrpc", "2.0");
-        body.put("method", "createProject");
-        body.put("id", 1);//Any numeric value is acceptable
-        JSONObject params = new JSONObject();
-        params.put("name", "My Project 1");
-        body.put("params", params);
-
-        Response response = RestAssured
-                .given()
-                .body(body.toString())
-                .post();
-        response.then().log().all().statusCode(200);
-
-        JSONObject responseObject = new JSONObject(response.getBody().asString());
-
-        projectId = responseObject.getInt("result");
-    }
-
-    private JSONArray getColumns(int projectId) {
-        JSONObject body = new JSONObject();
-        body.put("jsonrpc", "2.0");
-        body.put("method", "getColumns");
-        body.put("id", 1);//Any numeric value is acceptable
-        int[] params = {projectId};
-        body.put("params", params);
-
-        Response response = RestAssured
-                .given()
-                .body(body.toString())
-                .post();
-        response.then().log().all().statusCode(200);
-
-        JSONObject responseObject = new JSONObject(response.getBody().asString());
-
-        return responseObject.getJSONArray("result");
-    }
-
-    private int getColumnIdByName(int projectId, String name) {
-        JSONArray columns = getColumns(projectId);
-
-        for (Object obj : columns) {
-            JSONObject column = (JSONObject) obj;
-            if (column.getString("title").equals(name)) {
-                return column.getInt("id");
-            }
-        }
-
-        throw new NotFoundException("The column was not found");
+        userId = userRepository.createUser(
+            RandomStringUtils.randomAlphanumeric(10),
+            RandomStringUtils.randomAlphanumeric(10)
+        );
+        projectId = projectRepository.createProject("My Project 1", userId);
     }
 
     private void initBacklogColumnId() {
@@ -74,39 +41,33 @@ public class ProjectTasksTest extends BaseTest {
             return;
         }
 
-        backlogColumnId = getColumnIdByName(projectId,"Backlog");
+        backlogColumnId = columnRepository.getColumnIdByName(projectId,"Backlog");
     }
 
     @BeforeMethod
-    private void initVariables() {
-        createProject();
+    private void createEntities() {
+        initProject();
         initBacklogColumnId();
+    }
+
+    @AfterMethod
+    private void removeEntities() {
+        if (projectId != null) {
+            projectRepository.deleteProject(projectId);
+            projectId = null;
+        }
+        if (userId != null) {
+            userRepository.deleteUser(userId);
+            userId = null;
+        }
+        if (backlogColumnId != null) {
+            backlogColumnId = null;
+        }
     }
 
     @Test
     public void createTaskSuccessTest() {
-        createTask("Create Task Success Test");
-    }
-
-    private int createTask(String title) {
-        JSONObject body = new JSONObject();
-        body.put("jsonrpc", "2.0");
-        body.put("method", "createTask");
-        body.put("id", 1);//Any numeric value is acceptable
-        JSONObject params = new JSONObject();
-        params.put("title", title);
-        params.put("project_id", projectId);
-        params.put("column_id", backlogColumnId);
-        body.put("params", params);
-
-        Response response = RestAssured
-                .given()
-                .body(body.toString())
-                .post();
-        response.then().log().all().statusCode(200);
-
-        JSONObject responseObject = new JSONObject(response.getBody().asString());
-        return responseObject.getInt("result");
+        taskRepository.createTask("Create Task Success Test", projectId, backlogColumnId);
     }
 
     @Test
@@ -155,7 +116,7 @@ public class ProjectTasksTest extends BaseTest {
     @Test
     public void getTaskSuccessTest() {
         String taskTitle = "get Task Success Test";
-        int taskId = createTask(taskTitle);
+        int taskId = taskRepository.createTask(taskTitle, projectId, backlogColumnId);
 
         JSONObject resultTask = getTask(taskId);
         Assert.assertEquals(taskId, resultTask.getInt("id"));
@@ -165,9 +126,9 @@ public class ProjectTasksTest extends BaseTest {
     @Test
     public void getAllTasksSuccessTest() {
         String task1Title = "Task 1";
-        int task1Id = createTask(task1Title);
+        int task1Id = taskRepository.createTask(task1Title, projectId, backlogColumnId);
         String task2Title = "Task 2";
-        int task2Id = createTask(task2Title);
+        int task2Id = taskRepository.createTask(task2Title, projectId, backlogColumnId);
 
         JSONObject body = new JSONObject();
         body.put("jsonrpc", "2.0");
@@ -208,7 +169,7 @@ public class ProjectTasksTest extends BaseTest {
     @Test
     public void updateTasksSuccessTest() {
         String taskTitle = "Task 1";
-        int taskId = createTask(taskTitle);
+        int taskId = taskRepository.createTask(taskTitle, projectId, backlogColumnId);;
 
         JSONObject body = new JSONObject();
         body.put("jsonrpc", "2.0");
@@ -232,7 +193,7 @@ public class ProjectTasksTest extends BaseTest {
     @Test
     public void removeTasksSuccessTest() {
         String taskTitle = "Task 1";
-        int taskId = createTask(taskTitle);
+        int taskId = taskRepository.createTask(taskTitle, projectId, backlogColumnId);;
 
         JSONObject body = new JSONObject();
         body.put("jsonrpc", "2.0");

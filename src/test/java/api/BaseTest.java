@@ -1,38 +1,24 @@
 package api;
 
-import base.ConfigLoader;
-import io.qameta.allure.restassured.AllureRestAssured;
-import io.restassured.RestAssured;
-import io.restassured.builder.RequestSpecBuilder;
+import base.ApiAuthService;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeMethod;
-import java.util.Base64;
-import java.nio.charset.StandardCharsets;
 
 public class BaseTest {
-    protected ConfigLoader config = new ConfigLoader();
+    protected ApiAuthService authService = new ApiAuthService();
 
     private boolean isLoggedIn = false;
 
     @BeforeMethod
     public void setup() {
-        if (isLoggedIn) {
-            return;
+        if (!isLoggedIn) {
+            authService.login();
+            isLoggedIn = true;
         }
+    }
 
-        RestAssured.baseURI = config.getConfig("kanboard.api.base.url");
-
-        String username = config.getConfig("kanboard.api.auth.username");
-        String apiToken = config.getConfig("kanboard.api.auth.password");
-
-        String authPair = username + ":" + apiToken;
-        String token = Base64.getEncoder().encodeToString(authPair.getBytes(StandardCharsets.UTF_8));
-
-        RestAssured.requestSpecification = new RequestSpecBuilder()
-                .addHeader("Authorization", "Basic " + token)
-                .addHeader("Content-Type", "application/json")
-                .build()
-                .filter(new AllureRestAssured());
-
-        isLoggedIn = true;
+    @AfterClass
+    public void tearDown() {
+        authService.logout();
     }
 }

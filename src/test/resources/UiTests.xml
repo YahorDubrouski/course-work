@@ -3,6 +3,7 @@
 <suite name="UI tests">
     <test thread-count="5" name="UI tests">
         <classes>
+            <class name="ui.LoginPageTest"/>
             <class name="ui.ProjectTasksTest"/>
         </classes>
     </test>

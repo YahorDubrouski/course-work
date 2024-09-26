@@ -3,7 +3,9 @@
 <suite name="API tests">
     <test thread-count="5" name="API tests">
         <classes>
-            <class name="api.ProjectTasksTest"/>
+            <class name="api.ProjectTest"/>
+            <class name="api.TaskTest"/>
+            <class name="api.UserTest"/>
         </classes>
     </test>
 </suite>
