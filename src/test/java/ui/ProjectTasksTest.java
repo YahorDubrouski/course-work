@@ -4,10 +4,8 @@ import static com.codeborne.selenide.Condition.*;
 
 import base.*;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+
 import static com.codeborne.selenide.Selenide.*;
 import static com.codeborne.selenide.Selectors.*;
 
@@ -30,11 +28,6 @@ public class ProjectTasksTest extends BasePage {
         super.setUp();
 
         loginPage.login();
-
-        if (!isApiLoggedIn) {
-            apiAuthService.login();
-            isApiLoggedIn = true;
-        }
         if (projectId == null) {
             userId = userRepository.createUser(
                     RandomStringUtils.randomAlphanumeric(10),
@@ -45,9 +38,18 @@ public class ProjectTasksTest extends BasePage {
         }
     }
 
+    @BeforeClass
+    private void setUpClass() {
+        if (!isApiLoggedIn) {
+            apiAuthService.login();
+            isApiLoggedIn = true;
+        }
+    }
+
     @AfterClass
     private void tearDownClass() {
         apiAuthService.logout();
+        isApiLoggedIn = false;
     }
 
     @AfterMethod

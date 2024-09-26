@@ -2,6 +2,7 @@ package api;
 
 import base.ApiAuthService;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
 public class BaseTest {
@@ -9,7 +10,7 @@ public class BaseTest {
 
     private boolean isLoggedIn = false;
 
-    @BeforeMethod
+    @BeforeClass
     public void setup() {
         if (!isLoggedIn) {
             authService.login();
@@ -20,5 +21,6 @@ public class BaseTest {
     @AfterClass
     public void tearDown() {
         authService.logout();
+        isLoggedIn = false;
     }
 }
