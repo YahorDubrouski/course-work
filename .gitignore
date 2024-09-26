@@ -1,3 +1,7 @@
+jenkins.txt
+creds_and_links
+allure-results
+.env
 .idea
 target/
 !.mvn/wrapper/maven-wrapper.jar
