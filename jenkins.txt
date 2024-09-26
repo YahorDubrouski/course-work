@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    environment {
+        JAVA_HOME = '/path/JDK/jdk-23'
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+        UI_BROWSER = 'firefox'
+        UI_BROWSER_HEADLESS = false
+        UI_BROWSER_WAIT_SECONDS_TIMEOUT = 5
+        UI_DRIVER_REMOTE_URL = 'http://localhost:4444'
+
+        KANBOARD_BASE_URL = 'http://localhost'
+        KANBOARD_AUTH_USERNAME = 'secret'
+        KANBOARD_AUTH_PASSWORD = 'secret'
+
+        KANBOARD_API_BASE_URL = 'http://localhost/jsonrpc.php'
+        KANBOARD_API_AUTH_USERNAME = 'jsonrpc'
+        KANBOARD_API_AUTH_PASSWORD = 'secret'
+    }
+
+    tools {
+        maven "maven"
+    }
+
+    triggers {
+        cron('H 2 * * *')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                git branch: 'course-work', url: 'https://github.com/YahorDubrouski/course-work.git'
+                sh "mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/AllTests.xml"
+            }
+
+            post {
+                success {
+                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+                }
+            }
+        }
+    }
+}
