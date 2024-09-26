@@ -5,13 +5,7 @@ import io.restassured.response.Response;
 import org.json.JSONObject;
 
 public class UserRepository {
-    private ApiAuthService authService = new ApiAuthService();
-
     public int createUser(String username, String password) {
-        if (RestAssured.requestSpecification == null) {
-            authService.login();
-        }
-
         JSONObject body = new JSONObject();
         body.put("jsonrpc", "2.0");
         body.put("method", "createUser");
@@ -33,10 +27,6 @@ public class UserRepository {
     }
 
     public void deleteUser(int userId) {
-        if (RestAssured.requestSpecification == null) {
-            authService.login();
-        }
-
         JSONObject body = new JSONObject();
         body.put("jsonrpc", "2.0");
         body.put("method", "removeUser");
