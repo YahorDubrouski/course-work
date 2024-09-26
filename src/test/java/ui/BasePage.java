@@ -1,7 +1,7 @@
 package ui;
 
 import com.codeborne.selenide.Configuration;
-import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 import base.ConfigLoader;
@@ -17,7 +17,7 @@ public class BasePage {
         Configuration.timeout = Long.parseLong(config.getConfig("ui.browser.wait.seconds.timeout"));
     }
 
-    @AfterClass
+    @AfterMethod
     public void tearDown() {
         closeWebDriver();
     }

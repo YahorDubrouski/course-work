@@ -17,8 +17,6 @@ public class ProjectTasksTest extends BasePage {
     private ColumnRepository columnRepository = new ColumnRepository();
     private TaskRepository taskRepository = new TaskRepository();
 
-    private boolean isApiLoggedIn = false;
-
     private Integer userId;
     private Integer projectId;
     private Integer backlogColumnId;
@@ -40,21 +38,16 @@ public class ProjectTasksTest extends BasePage {
 
     @BeforeClass
     private void setUpClass() {
-        if (!isApiLoggedIn) {
-            apiAuthService.login();
-            isApiLoggedIn = true;
-        }
+        apiAuthService.login();
     }
 
     @AfterClass
     private void tearDownClass() {
         apiAuthService.logout();
-        isApiLoggedIn = false;
     }
 
     @AfterMethod
     public void tearDown() {
-        super.tearDown();
         if (projectId != null) {
             projectRepository.deleteProject(projectId);
             projectId = null;
@@ -66,6 +59,8 @@ public class ProjectTasksTest extends BasePage {
         if (backlogColumnId != null) {
             backlogColumnId = null;
         }
+
+        super.tearDown();
     }
 
     @Test
