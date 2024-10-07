@@ -1,0 +1,12 @@
+ui.browser=firefox
+ui.browser.headless=false
+ui.browser.wait.seconds.timeout=5
+ui.driver.remote.url=http://localhost:4444
+
+kanboard.base.url=http://192.168.34.6
+kanboard.auth.username=admin
+kanboard.auth.password=admin
+
+kanboard.api.base.url=http://localhost/jsonrpc.php
+kanboard.api.auth.username=jsonrpc
+kanboard.api.auth.password=secret

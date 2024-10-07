@@ -1,0 +1,64 @@
+version: '2'
+services:
+  kanboard:
+    image: kanboard/kanboard:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - kanboard_data:/var/www/app/data
+      - kanboard_plugins:/var/www/app/plugins
+      - kanboard_ssl:/etc/nginx/ssl
+    environment:
+      DATABASE_URL: mysql://kanboard:kanboard-secret@db/kanboard
+  db:
+    image: mariadb:latest
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: kanboard
+      MYSQL_USER: kanboard
+      MYSQL_PASSWORD: kanboard-secret
+    volumes:
+      - db:/var/lib/mysql
+
+  jenkins:
+    image: "jenkins/jenkins:lts"
+    container_name: "jenkins_lts"
+    volumes:
+      - jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /usr/bin/docker:/usr/bin/docker
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    ports:
+      - 8080:8080
+    networks:
+      - course-project
+
+  firefox:
+    image: selenium/standalone-firefox:latest
+    container_name: selenium_firefox
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_SESSION_TIMEOUT=60
+    shm_size: '2gb' # Increase shared memory to avoid browser crashes
+    networks:
+      - course-project
+
+volumes:
+  kanboard_data:
+  kanboard_plugins:
+  kanboard_ssl:
+  db:
+  jenkins:
+
+networks:
+  course-project:
+    driver: bridge
